@@ -9,5 +9,10 @@
             "email": "pierre.rineau@makina-corpus.com"
         }
     ],
-    "require": {}
+    "require": {},
+    "prefer-stable": true,
+    "bin": [
+        "xtrace2fg"
+    ]
 }
+
