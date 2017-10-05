@@ -1,0 +1,13 @@
+{
+    "name": "pounard/xtrace2fg",
+    "description": "Converts XDebug TRACE files to https://github.com/brendangregg/FlameGraph compatible input",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pierre Rineau",
+            "email": "pierre.rineau@makina-corpus.com"
+        }
+    ],
+    "require": {}
+}
