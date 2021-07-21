@@ -49,5 +49,5 @@ cp /tmp/trace.XXXXXX.xt samples/test.xt
 cat samples/test.cost.output | ~/FlameGraph/flamegraph.pl > samples/test.cost.svg
 
 ./xtrace2fg memory samples/test.xt > samples/test.memory.output
-cat samples/test.memory.output | ~/FlameGraph/flamegraph.pl > samples/test.memory.svg
+cat samples/test.memory.output | ~/FlameGraph/flamegraph.pl --color=mem > samples/test.memory.svg
 ```
