@@ -373,36 +373,36 @@
 <text id="matched" x="1090.00" y="133" > </text>
 <g id="frames">
 <g >
-<title>all (151 samples, 100%)</title><rect x="10.0" y="101" width="1180.0" height="15.0" fill="rgb(239,153,11)" rx="2" ry="2" />
-<text  x="13.00" y="111.5" ></text>
+<title>ABB (165 samples, 12.91%)</title><rect x="360.9" y="37" width="152.3" height="15.0" fill="rgb(214,31,14)" rx="2" ry="2" />
+<text  x="363.86" y="47.5" >ABB</text>
 </g>
 <g >
-<title>AC (3 samples, 1.99%)</title><rect x="1166.6" y="53" width="23.4" height="15.0" fill="rgb(210,166,31)" rx="2" ry="2" />
-<text  x="1169.56" y="63.5" >AC</text>
+<title>AA (3 samples, 0.23%)</title><rect x="180.8" y="53" width="2.8" height="15.0" fill="rgb(238,93,21)" rx="2" ry="2" />
+<text  x="183.81" y="63.5" ></text>
 </g>
 <g >
-<title>A (82 samples, 54.30%)</title><rect x="549.2" y="69" width="640.8" height="15.0" fill="rgb(223,56,29)" rx="2" ry="2" />
-<text  x="552.21" y="79.5" >A</text>
-</g>
-<g >
-<title>ABB (4 samples, 2.65%)</title><rect x="1135.3" y="37" width="31.3" height="15.0" fill="rgb(242,33,4)" rx="2" ry="2" />
-<text  x="1138.30" y="47.5" >ABB</text>
-</g>
-<g >
-<title>AA (6 samples, 3.97%)</title><rect x="893.0" y="53" width="46.9" height="15.0" fill="rgb(242,50,0)" rx="2" ry="2" />
-<text  x="896.05" y="63.5" >AA</text>
-</g>
-<g >
-<title>ABA (4 samples, 2.65%)</title><rect x="1104.0" y="37" width="31.3" height="15.0" fill="rgb(254,183,33)" rx="2" ry="2" />
-<text  x="1107.04" y="47.5" >ABA</text>
-</g>
-<g >
-<title>{main} (151 samples, 100.00%)</title><rect x="10.0" y="85" width="1180.0" height="15.0" fill="rgb(246,141,39)" rx="2" ry="2" />
+<title>{main} (1,278 samples, 100.00%)</title><rect x="10.0" y="85" width="1180.0" height="15.0" fill="rgb(209,49,26)" rx="2" ry="2" />
 <text  x="13.00" y="95.5" >{main}</text>
 </g>
 <g >
-<title>AB (29 samples, 19.21%)</title><rect x="939.9" y="53" width="226.7" height="15.0" fill="rgb(222,175,44)" rx="2" ry="2" />
-<text  x="942.93" y="63.5" >AB</text>
+<title>A (1,105 samples, 86.46%)</title><rect x="169.7" y="69" width="1020.3" height="15.0" fill="rgb(231,207,21)" rx="2" ry="2" />
+<text  x="172.73" y="79.5" >A</text>
+</g>
+<g >
+<title>all (1,278 samples, 100%)</title><rect x="10.0" y="101" width="1180.0" height="15.0" fill="rgb(208,218,12)" rx="2" ry="2" />
+<text  x="13.00" y="111.5" ></text>
+</g>
+<g >
+<title>AB (357 samples, 27.93%)</title><rect x="183.6" y="53" width="329.6" height="15.0" fill="rgb(254,90,10)" rx="2" ry="2" />
+<text  x="186.58" y="63.5" >AB</text>
+</g>
+<g >
+<title>AC (733 samples, 57.36%)</title><rect x="513.2" y="53" width="676.8" height="15.0" fill="rgb(252,103,26)" rx="2" ry="2" />
+<text  x="516.21" y="63.5" >AC</text>
+</g>
+<g >
+<title>ABA (4 samples, 0.31%)</title><rect x="357.2" y="37" width="3.7" height="15.0" fill="rgb(218,151,35)" rx="2" ry="2" />
+<text  x="360.17" y="47.5" ></text>
 </g>
 </g>
 </svg>

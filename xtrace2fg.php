@@ -2,7 +2,13 @@
 
 function usage($programeName) {
     echo <<<EOT
-Usage: {$programeName} TRACE_FILE [COST_FACTOR] | flamegraph.pl > OUTPUT.svg
+Usage:
+
+    {$programeName} TRACE_FILE | flamegraph.pl > OUTPUT.svg
+
+    OR:
+
+    {$programeName} memory TRACE_FILE | flamegraph.pl > OUTPUT.svg
 
 Prerequisites:
   - You need https://github.com/brendangregg/FlameGraph to be installed
@@ -19,14 +25,30 @@ browsing capabilities in the flame graph.
 EOT;
 }
 
+global $memory;
+$memory = false;
+$filename = null;
+
 if (empty($argv[1])) {
     usage($argv[0]);
     die();
 }
-if (!file_exists($argv[1])) {
+
+if ('memory' === $argv[1] || 'mem' === $argv[1]) {
+    $memory = true;
+    if (empty($argv[2])) {
+        usage($argv[0]);
+        die();
+    }
+    $filename = $argv[2];
+} else {
+    $filename = $argv[1];
+}
+
+if (!file_exists($filename)) {
     die("input file does not exist");
 }
-if (!is_readable($argv[1])) {
+if (!is_readable($filename)) {
     die("cannot read input file");
 }
 
@@ -36,10 +58,12 @@ class TraceNode
 {
     private string $name;
     private ?string $prefix = null;
-    private float $costStart = 0;
-    private int $costStop = 0;
+    private float $costStart = 0.0;
+    private float $costStop = 0.0;
     private int $memoryStart = 0;
     private int $memoryStop = 0;
+    private float $childCost = 0.0;
+    private int $childMemory = 0;
 
     public function __construct(string $name, float $costStart, int $memoryStart, ?string $prefix)
     {
@@ -68,6 +92,12 @@ class TraceNode
         $this->memoryStop = $memoryStop;
     }
 
+    public function addChildCost(TraceNode $node): void
+    {
+        $this->childCost += $node->getInclusiveCost();
+        $this->childMemory += $node->getInclusiveMemory();
+    }
+
     public function getInclusiveCost(): float
     {
         return ($this->costStop - $this->costStart);
@@ -75,29 +105,21 @@ class TraceNode
 
     public function getSelfCost(): float
     {
-        $total = $this->getInclusiveCost();
-
-        /*
-        foreach ($this->children as $child) {
-            $total -= $child->getInclusiveCost();
-        }
-         */
-
-        if ($total < 0) {
-            //throw new \Exception("Self cost cannot be under 0");
-            return 0;
-        }
-
-        return $total;
+        return $this->getInclusiveCost() - $this->childCost;
     }
 
-    public function getStopCost(): float
+    public function getInclusiveMemory(): int
     {
-        return $this->costStop;
+        return ($this->memoryStop - $this->memoryStart);
+    }
+
+    public function getSelfMemory(): float
+    {
+        return $this->getInclusiveMemory() - $this->childMemory;
     }
 }
 
-$handle = fopen($argv[1], 'r');
+$handle = fopen($filename, 'r');
 if (!$handle) {
     die("error while opening input file");
 }
@@ -107,9 +129,19 @@ if (!$handle) {
  */
 function handleExit(/* resource */ $handle, array $data, TraceNode $function): void
 {
+    global $memory;
+
     $function->exit((float) $data[3] * COST_FACTOR, $data[4]);
 
-    echo $function->getAbsoluteName(), ' ', round($function->getSelfCost(), 0), "\n";
+    if ($memory) {
+        if (0 > ($bytes = $function->getSelfMemory())) {
+            echo $function->getAbsoluteName(), " 0\n";
+        } else {
+            echo $function->getAbsoluteName(), ' ', $bytes, "\n";
+        }
+    } else {
+        echo $function->getAbsoluteName(), ' ', round($function->getSelfCost(), 0), "\n";
+    }
 }
 
 /**
@@ -150,10 +182,10 @@ function parseLine(/* resource */ $handle): ?array
 /**
  * Handle single line.
  *
- * @return bool
- *   Returns true if "exit" is processed.
+ * @return ?RelativeCost
+ *   Sum of relative costs. Null if exit.
  */
-function handleLine(/* resource */ $handle, array $data, ?TraceNode $parent = null): bool
+function handleLine(/* resource */ $handle, array $data, ?TraceNode $parent = null): ?TraceNode
 {
     if (isset($data[5])) {
         $atLeastOne = false;
@@ -161,19 +193,21 @@ function handleLine(/* resource */ $handle, array $data, ?TraceNode $parent = nu
         // Parse all children until exit.
         while ($data = parseLine($handle)) {
             $atLeastOne = true;
-            if (!handleLine($handle, $data, $function)) {
-                break;
+            if ($childNode = handleLine($handle, $data, $function)) {
+                $function->addChildCost($childNode); 
+            } else{
+                break; // We just found the exit statement of this function.
             }
         }
         if (!$atLeastOne) {
             throw new \Exception("File ended with unclosed function " . $function->getAbsoluteName());
         }
-        return true;
+        return $function;
     } else if (!$parent) {
         throw new \Exception("Cannot exit without parent.");
     } else {
         handleExit($handle, $data, $parent);
-        return false;
+        return null;
     }
 }
 
