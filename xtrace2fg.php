@@ -30,23 +30,23 @@ if (!is_readable($argv[1])) {
     die("cannot read input file");
 }
 
-const COST_FACTOR = 10000000;
+const COST_FACTOR = 1000000;
 
 class TraceNode
 {
-    private $children = [];
-    private $name;
-    private $costStart = 0;
-    private $costStop = 0;
-    private $memoryStart = 0;
-    private $memoryStop = 0;
-    private $parent;
+    private string $name;
+    private ?string $prefix = null;
+    private float $costStart = 0;
+    private int $costStop = 0;
+    private int $memoryStart = 0;
+    private int $memoryStop = 0;
 
-    public function __construct(string $name, float $costStart, int $memoryStart)
+    public function __construct(string $name, float $costStart, int $memoryStart, ?string $prefix)
     {
         $this->name = $name;
         $this->costStart = $costStart;
         $this->memoryStart = $memoryStart;
+        $this->prefix = $prefix;
     }
 
     public function getName(): string
@@ -54,19 +54,12 @@ class TraceNode
         return $this->name;
     }
 
-    public function hasChildren(): bool
+    public function getAbsoluteName(): string
     {
-        return !empty($this->children);
-    }
-
-    public function getChildren(): array
-    {
-        return $this->children;
-    }
-
-    public function addChild(TraceNode $child)
-    {
-        $this->children[] = $child;
+        if ($this->prefix) {
+            return $this->prefix . ';' . $this->name;
+        }
+        return $this->name;
     }
 
     public function exit(float $costStop, int $memoryStop)
@@ -84,9 +77,11 @@ class TraceNode
     {
         $total = $this->getInclusiveCost();
 
+        /*
         foreach ($this->children as $child) {
             $total -= $child->getInclusiveCost();
         }
+         */
 
         if ($total < 0) {
             //throw new \Exception("Self cost cannot be under 0");
@@ -100,27 +95,6 @@ class TraceNode
     {
         return $this->costStop;
     }
-
-    public function setParent(TraceNode $parent)
-    {
-        $this->parent = $parent;
-
-        $parent->addChild($this);
-    }
-
-    public function hasParent(): bool
-    {
-        return null !== $this->parent;
-    }
-
-    public function getParent(): TraceNode
-    {
-        if (!$this->parent) {
-            throw new \LogicException(sprintf("node %s has no parent", $this->name));
-        }
-
-        return $this->parent;
-    }
 }
 
 $handle = fopen($argv[1], 'r');
@@ -128,108 +102,83 @@ if (!$handle) {
     die("error while opening input file");
 }
 
-function recursiveDisplay(TraceNode $node, $level = 0)
+/**
+ * Exit from a function, display its cost.
+ */
+function handleExit(/* resource */ $handle, array $data, TraceNode $function): void
 {
-    $prefix = implode('', array_fill(0, $level * 2, ' '));
+    $function->exit((float) $data[3] * COST_FACTOR, $data[4]);
 
-    if ($node->hasChildren()) {
-        echo $prefix, $node->getName(), ":\n";
-
-        foreach ($node->getChildren() as $child) {
-            recursiveDisplay($child, $level + 1);
-        }
-    } else {
-        echo $prefix, $node->getName(), "\n";
-    }
+    echo $function->getAbsoluteName(), ' ', round($function->getSelfCost(), 0), "\n";
 }
 
-function recursiveBuildTrace(TraceNode $node, $prefix = '')
+/**
+ * Create and recurse into function.
+ */
+function createFunction(/* resource */ $handle, array $data, ?TraceNode $parent = null): TraceNode
 {
-    if ($prefix) {
-        $prefix .= ';' . $node->getName();
-    } else {
-        $prefix = $node->getName();
-    }
-
-    echo $prefix, ' ', round($node->getSelfCost(), 0), "\n";
-
-    if ($node->hasChildren()) {
-        foreach ($node->getChildren() as $child) {
-            recursiveBuildTrace($child, $prefix);
-        }
-    }
+    return new TraceNode(
+        (string)$data[5], // Name
+        (float) $data[3] * COST_FACTOR, // CPU start
+        (int) $data[4], // Memory start
+        $parent ? $parent->getAbsoluteName() : null
+    );
 }
 
-function createFunction(array $data, TraceNode $parent = null)
+/**
+ * Parse next line.
+ */
+function parseLine(/* resource */ $handle): ?array
 {
-    $function = new TraceNode($data[5], $data[3] * COST_FACTOR, $data[4]);
-
-    if ($parent) {
-        $function->setParent($parent);
-    }
-
-    return $function;
-}
-
-function handleExit(array $data, TraceNode $parent)
-{
-    $parent->exit($data[3] * COST_FACTOR, $data[4]);
-
-    if ($parent->hasParent()) {
-        return $parent->getParent();
-    }
-}
-
-function handleLine(array $data, TraceNode $parent = null)
-{
-    $exit = $data[2];
-
-    if (isset($data[5])) {
-        return createFunction($data, $parent);
-    } else if ($exit) {
-        if (!$parent) {
-            throw new \Exception(printf("cannot exit without a parent"));
-        }
-        return handleExit($data, $parent);
-    } else {
-        throw new \Exception(printf("invalid trace file"));
-    }
-}
-
-function nextLine($handle)
-{
-    while (!feof($handle)) {
-        $line = stream_get_line($handle, 1000000, "\n");
-
-        // Sometime indent uses more than one \t hence the array_filter
-        $data = array_values(
-            array_filter(
-                explode("\t", $line),
-                function ($line) {
-                    return $line !== '';
-                }
+    while (!\feof($handle)) {
+        $line = \stream_get_line($handle, 1000000, "\n");
+        // Sometime indent uses more than one \t hence the \array_filter().
+        $data = \array_values(
+            \array_filter(
+                \explode("\t", $line),
+                fn ($line) => $line !== ''
             )
         );
-
-        if (count($data) < 5) {
+        if (\count($data) < 5) {
             continue;
         }
-
         return $data;
     }
+    return null;
 }
 
-$root = null;
-$function = null;
-
-while ($data = nextLine($handle)) {
-
-    $function = handleLine($data, $function);
-
-    if (!$root) {
-        $root = $function;
+/**
+ * Handle single line.
+ *
+ * @return bool
+ *   Returns true if "exit" is processed.
+ */
+function handleLine(/* resource */ $handle, array $data, ?TraceNode $parent = null): bool
+{
+    if (isset($data[5])) {
+        $atLeastOne = false;
+        $function = createFunction($handle, $data, $parent);
+        // Parse all children until exit.
+        while ($data = parseLine($handle)) {
+            $atLeastOne = true;
+            if (!handleLine($handle, $data, $function)) {
+                break;
+            }
+        }
+        if (!$atLeastOne) {
+            throw new \Exception("File ended with unclosed function " . $function->getAbsoluteName());
+        }
+        return true;
+    } else if (!$parent) {
+        throw new \Exception("Cannot exit without parent.");
+    } else {
+        handleExit($handle, $data, $parent);
+        return false;
     }
 }
 
-recursiveBuildTrace($root, '');
-
+// Handle top-level calls, in PHP there is always one, which is '{main}'
+// nevertheless, better be safe than sorry.
+while ($data = parseLine($handle)) {
+    handleLine($handle, $data);
+}

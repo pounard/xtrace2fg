@@ -1,0 +1,28 @@
+Version: 3.0.4
+File format: 4
+TRACE START [2021-07-21 11:33:22.959859]
+1	0	0	0.000267	351112	{main}	1		/home/pounard/xtrace2fg/samples/test.php	0	0
+2	1	0	0.000291	351112	A	1		/home/pounard/xtrace2fg/samples/test.php	28	0
+3	2	0	0.000297	351112	AA	1		/home/pounard/xtrace2fg/samples/test.php	21	0
+3	2	1	0.000301	351112
+3	3	0	0.000303	351112	AB	1		/home/pounard/xtrace2fg/samples/test.php	22	0
+4	4	0	0.000306	351112	ABA	1		/home/pounard/xtrace2fg/samples/test.php	13	0
+4	4	1	0.000308	351112
+4	5	0	0.000310	351112	ABB	1		/home/pounard/xtrace2fg/samples/test.php	14	0
+4	5	1	0.000312	351112
+3	3	1	0.000314	351112
+3	6	0	0.000316	351112	AA	1		/home/pounard/xtrace2fg/samples/test.php	23	0
+3	6	1	0.000318	351112
+3	7	0	0.000319	351112	AB	1		/home/pounard/xtrace2fg/samples/test.php	24	0
+4	8	0	0.000321	351112	ABA	1		/home/pounard/xtrace2fg/samples/test.php	13	0
+4	8	1	0.000323	351112
+4	9	0	0.000325	351112	ABB	1		/home/pounard/xtrace2fg/samples/test.php	14	0
+4	9	1	0.000327	351112
+3	7	1	0.000329	351112
+3	10	0	0.000330	351112	AC	1		/home/pounard/xtrace2fg/samples/test.php	25	0
+3	10	1	0.000333	351112
+2	1	1	0.000335	351112
+1	0	1	0.000336	351112
+			0.000366	282616
+TRACE END   [2021-07-21 11:33:22.959976]
+

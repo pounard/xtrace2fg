@@ -3,8 +3,8 @@
 
 ## Prerequisites
 
-You need https://github.com/brendangregg/FlameGraph to be installed.
-
+ - You need https://github.com/brendangregg/FlameGraph to be installed somewhere.
+ - `xdebug.trace_format` setting must be `1` in PHP configuration.
 
 ## Usage
 
@@ -21,3 +21,11 @@ Where:
 You can load the SVG output file into any recent browser to benefit from
 browsing capabilities in the flame graph.
 
+## Generated sample trace file
+
+```sh
+XDEBUG_MODE=trace XDEBUG_TRIGGER=1 php -d'xdebug.trace_format=1' -f samples/test.php
+cp /tmp/trace.XXXXXX.xt samples/test.xt
+./xtrace2fg samples/test.xt > samples/test.output
+./xtrace2fg samples/test.xt | ~/FlameGraph/flamegraph.pl > samples/test.svg
+```
