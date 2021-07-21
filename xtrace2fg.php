@@ -8,7 +8,7 @@ Usage:
 
     OR:
 
-    {$programeName} memory TRACE_FILE | flamegraph.pl > OUTPUT.svg
+    {$programeName} memory TRACE_FILE | flamegraph.pl --color=mem > OUTPUT.svg
 
 Prerequisites:
   - You need https://github.com/brendangregg/FlameGraph to be installed
@@ -16,8 +16,6 @@ Prerequisites:
 Where
   - FILE is the XDebug TRACE file (generated using xdebug.trace_format=1)
   - OUTPUT.svg if the output filename
-  - COST_FACTOR is an optional CPU cost factor, default is 10000000
-    use this if generated self cost per line don't mean anything
 
 You can load the SVG output file into any recent browser to benefit from
 browsing capabilities in the flame graph.

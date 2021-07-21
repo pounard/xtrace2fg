@@ -21,7 +21,7 @@ xtrace2fg TRACE_FILE | flamegraph.pl > OUTPUT.svg
 And this will output a trace file using memory relative cost for each function:
 
 ```sh
-xtrace2fg memory TRACE_FILE | flamegraph.pl > OUTPUT.svg
+xtrace2fg memory TRACE_FILE | flamegraph.pl --color=mem > OUTPUT.svg
 ```
 
 Where:
