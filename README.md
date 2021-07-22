@@ -1,6 +1,6 @@
 # XDebug TRACE files to FlameGraph converter
 
-From a given XDebug generated trace file, outputs text suitable for
+From a given Xdebug generated trace file, outputs text suitable for
 https://github.com/brendangregg/FlameGraph flamegraph generator.
 
 This requires `xdebug.trace_format` setting to be set to `1`.
@@ -26,7 +26,7 @@ xtrace2fg memory TRACE_FILE | flamegraph.pl --color=mem > OUTPUT.svg
 
 Where:
 
- * FILE is the XDebug TRACE file (generated using xdebug.trace_format=1)
+ * FILE is the Xdebug TRACE file (generated using xdebug.trace_format=1)
 
  * OUTPUT.svg if the output filename
 
