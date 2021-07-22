@@ -4,7 +4,7 @@ function usage($programeName) {
     echo <<<EOT
 Usage:
 
-    {$programeName} TRACE_FILE | flamegraph.pl > OUTPUT.svg
+    {$programeName} [self|inclusive] TRACE_FILE | flamegraph.pl > OUTPUT.svg
 
     OR:
 
@@ -14,8 +14,14 @@ Prerequisites:
   - You need https://github.com/brendangregg/FlameGraph to be installed
 
 Where
-  - FILE is the XDebug TRACE file (generated using xdebug.trace_format=1)
-  - OUTPUT.svg if the output filename
+  - "memory" is for generating a memory based output whose values are memory
+    allocated and not freed by functions (in bytes),
+  - "self" (default) is for generating a cost (time) based output whose timings
+    are excludes children time. By experience it's the most interesting one.
+  - "inclusive" is for generating a cost (time) based output whose
+    timings includes children time.
+  - FILE is the XDebug TRACE file (generated using xdebug.trace_format=1).
+  - OUTPUT.svg if the output filename.
 
 You can load the SVG output file into any recent browser to benefit from
 browsing capabilities in the flame graph.
@@ -23,8 +29,11 @@ browsing capabilities in the flame graph.
 EOT;
 }
 
-global $memory;
-$memory = false;
+const MODE_MEMORY = 1;
+const MODE_INCLUSIVE = 2;
+const MODE_SELF = 3;
+
+global $mode;
 $filename = null;
 
 if (empty($argv[1])) {
@@ -33,13 +42,28 @@ if (empty($argv[1])) {
 }
 
 if ('memory' === $argv[1] || 'mem' === $argv[1]) {
-    $memory = true;
+    $mode = MODE_MEMORY;
+    if (empty($argv[2])) {
+        usage($argv[0]);
+        die();
+    }
+    $filename = $argv[2];
+} else if ('self' === $argv[1]) {
+    $mode = MODE_SELF;
+    if (empty($argv[2])) {
+        usage($argv[0]);
+        die();
+    }
+    $filename = $argv[2];
+} else if ('inclusive' === $argv[1]) {
+    $mode = MODE_INCLUSIVE;
     if (empty($argv[2])) {
         usage($argv[0]);
         die();
     }
     $filename = $argv[2];
 } else {
+    $mode = MODE_SELF;
     $filename = $argv[1];
 }
 
@@ -127,18 +151,27 @@ if (!$handle) {
  */
 function handleExit(/* resource */ $handle, array $data, TraceNode $function): void
 {
-    global $memory;
+    global $mode;
 
     $function->exit((float) $data[3] * COST_FACTOR, $data[4]);
 
-    if ($memory) {
-        if (0 > ($bytes = $function->getSelfMemory())) {
-            echo $function->getAbsoluteName(), " 0\n";
-        } else {
-            echo $function->getAbsoluteName(), ' ', $bytes, "\n";
-        }
-    } else {
-        echo $function->getAbsoluteName(), ' ', round($function->getSelfCost(), 0), "\n";
+    switch ($mode) {
+        case MODE_MEMORY:
+            if (0 > ($bytes = $function->getSelfMemory())) {
+                echo $function->getAbsoluteName(), " 0\n";
+            } else {
+                echo $function->getAbsoluteName(), ' ', $bytes, "\n";
+            }
+            break;
+
+        case MODE_INCLUSIVE:
+            echo $function->getAbsoluteName(), ' ', round($function->getInclusiveCost(), 0), "\n";
+            break;
+
+        case MODE_SELF:
+        default:
+            echo $function->getAbsoluteName(), ' ', round($function->getSelfCost(), 0), "\n";
+            break;
     }
 }
 
